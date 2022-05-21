@@ -2,25 +2,34 @@
 export type Stream = {
 
 }
+export type ProviderPageOffsets = {
+  [key: string]: string
+}
 
 export type PagedStreams = {
   streams: Stream[],
-  nextPageToken?: string
+  nextPageOffsets?: ProviderPageOffsets
 }
 
 export type GameStreamProviderOptions = {
   pageSize: number,
-  pageSkip: number
+  pageOffset?: string
 }
 
 export interface GameStreamProvider {
   get id(): string
-  getStreams(options: GameStreamProviderOptions): PagedStreams,
+  get streams(): Stream[]
+  get nextPageOffset(): string | undefined
+
+  setPageSize(pageSize: number): void
+  setPageOffset(pageOffset?: string): void
+  readStreams(): void
+
 }
 
 export type GameStreamServiceOptions = {
-  pageSize: number,
-  pageSkip: number
+  pageSize: number
+  pageOffsets?: ProviderPageOffsets
 }
 
 export class GameStreamService {
@@ -36,10 +45,11 @@ export class GameStreamService {
     const streamAggregator = new StreamAggregator()
 
     this.streamProviders.forEach((provider) => {
-      streamAggregator.addStreams(
-        provider.id,
-        provider.getStreams({ pageSize: options.pageSize, pageSkip: options.pageSkip })
-      )
+      provider.setPageSize(options.pageSize)
+      provider.setPageOffset(options.pageOffsets?.[provider.id])
+      provider.readStreams()
+
+      streamAggregator.addStreams(provider.id, provider.streams, provider.nextPageOffset)
     })
 
     return streamAggregator.aggregateStreams()
@@ -47,10 +57,12 @@ export class GameStreamService {
 }
 
 class StreamAggregator {
-  private providerStreams: Record<string, PagedStreams> = {}
+  private providerStreams: Record<string, Stream[]> = {}
+  private providerPageOffsets: Record<string, string | undefined> = {}
   
-  public addStreams(providerId: string, streams: PagedStreams): StreamAggregator {
+  public addStreams(providerId: string, streams: Stream[], nextPageOffset?: string): StreamAggregator {
     this.providerStreams[providerId] = streams
+    this.providerPageOffsets[providerId] = nextPageOffset
 
     return this
   }
@@ -58,27 +70,26 @@ class StreamAggregator {
   public aggregateStreams(): PagedStreams {
     return {
       streams: this.getConcatenatedStreams(),
-      nextPageToken: this.getConcatenatedNextPageToken()
+      nextPageOffsets: this.getNextPageOffsets()
     }
   }
 
   private getConcatenatedStreams(): Stream[] {
     return Object
       .values(this.providerStreams)
-      .reduce<Stream[]>((allStreams: Stream[], pagedStreams: PagedStreams) => {
-        return allStreams.concat(pagedStreams.streams)
+      .reduce<Stream[]>((allStreams: Stream[], providerStreams: Stream[]) => {
+        return allStreams.concat(providerStreams)
     }, [])
   }
 
-  private getConcatenatedNextPageToken(): string {
+  private getNextPageOffsets(): ProviderPageOffsets {
     return Object
-      .entries(this.providerStreams)
-      .filter(([_, streams]) => {
-        return streams.nextPageToken !== undefined
+      .entries(this.providerPageOffsets)
+      .filter(([_, nextPageOffset]) => {
+        return nextPageOffset !== undefined
       })
-      .reduce<string[]>((concatenatedNextPageToken: string[], [providerId, pagedStreams]) => {
-          return [...concatenatedNextPageToken, `${providerId}:${pagedStreams.nextPageToken}`]
-    }, [])
-    .join(',')
+      .reduce<ProviderPageOffsets>((nextPageOffsets: ProviderPageOffsets, [providerId, nextPageOffset]) => {
+          return {...nextPageOffsets, [providerId]: nextPageOffset! }
+      }, {})
   }
 }
