@@ -1,18 +1,18 @@
 import { assertEquals } from "../../dev_deps.ts"
-import { GameStreamService, GameStreamProvider, Stream, PageOffset } from "../game_stream_service.ts";
+import { StreamService, StreamProvider, Stream, PageOffset } from "../stream_service.ts";
 
-Deno.test("Game stream service", async (t) => {
-  await t.step("returns an empty list of game streams when the stream provider has no streams available", () => {
+Deno.test("Stream service", async (t) => {
+  await t.step("returns an empty list of streams when the stream provider has no streams available", () => {
     const streamProvider = new TestStreamProvider('1', createPagedStreams(0))
-    const streamService = new GameStreamService().registerStreamProvider(streamProvider)
+    const streamService = new StreamService().registerStreamProvider(streamProvider)
 
     const pagedStreams = streamService.getStreams()
 
     assertEquals(pagedStreams.streams.length, 0)
   })
 
-  await t.step("returns a list of game streams when at least one stream provider has streams available", () => {
-    const streamService = new GameStreamService()
+  await t.step("returns a list of streams when at least one stream provider has streams available", () => {
+    const streamService = new StreamService()
       .registerStreamProvider(new TestStreamProvider('1', createPagedStreams(2)))
       .setPageSize(2)
 
@@ -21,8 +21,8 @@ Deno.test("Game stream service", async (t) => {
     assertEquals(pagedStreams.streams.length, 2)
   })
 
-  await t.step("returns a list of game streams from all providers", () => {
-    const streamService = new GameStreamService()
+  await t.step("returns a list of streams from all providers", () => {
+    const streamService = new StreamService()
       .registerStreamProvider(new TestStreamProvider('1', createPagedStreams(2)))
       .registerStreamProvider(new TestStreamProvider('2', createPagedStreams(1)))
       .setPageSize(2)
@@ -33,7 +33,7 @@ Deno.test("Game stream service", async (t) => {
   })
 
   await t.step("returns a paged list of streams from each provider", () => {
-    const streamService = new GameStreamService()
+    const streamService = new StreamService()
       .registerStreamProvider(new TestStreamProvider('1', createPagedStreams(3)))
       .registerStreamProvider(new TestStreamProvider('2', createPagedStreams(3)))
       .setPageSize(2)
@@ -45,7 +45,7 @@ Deno.test("Game stream service", async (t) => {
 
   await t.step("returns a next page token for each provider that has more pages", () => {
     const expectedPageOffsets = { provider1: new PageOffset('1'), provider2: PageOffset.none(), provider3: new PageOffset('2') }
-    const streamService = new GameStreamService()
+    const streamService = new StreamService()
       .registerStreamProvider(new TestStreamProvider('provider1', createPagedStreams(1), expectedPageOffsets.provider1))
       .registerStreamProvider(new TestStreamProvider('provider2', createPagedStreams(1)))
       .registerStreamProvider(new TestStreamProvider('provider3', createPagedStreams(1), expectedPageOffsets.provider3))
@@ -61,7 +61,7 @@ Deno.test("Game stream service", async (t) => {
   })
 
   await t.step("returns the next page of streams from each provider", () => {
-    const streamService = new GameStreamService()
+    const streamService = new StreamService()
       .registerStreamProvider(new TestStreamProvider('provider1', createPagedStreams(3)))
       .registerStreamProvider(new TestStreamProvider('provider2', createPagedStreams(2)))
       .registerStreamProvider(new TestStreamProvider('provider3', createPagedStreams(3)))
@@ -98,19 +98,19 @@ Deno.test("Page offset", async (t) => {
   await t.step("Returns true when the page offset is none", () => {
     const pageOffset = PageOffset.none()
 
-    assertEquals(pageOffset.isSome, true)
-    assertEquals(pageOffset.isNone, false)
+    assertEquals(pageOffset.isNone, true)
+    assertEquals(pageOffset.isSome, false)
   })
 
   await t.step("Returns true when the page offset is not none", () => {
     const pageOffset = PageOffset.some('1')
-
-    assertEquals(pageOffset.isNone, true)
-    assertEquals(pageOffset.isSome, false)
+ 
+    assertEquals(pageOffset.isSome, true)
+    assertEquals(pageOffset.isNone, false)
   })
 })
 
-class TestStreamProvider implements GameStreamProvider {
+class TestStreamProvider implements StreamProvider {
   private _streamPlatform: StreamPlatform
   private _providerId: string
   private _streams: Stream[] = []

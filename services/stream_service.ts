@@ -44,7 +44,7 @@ export type PagedStreams = {
   nextPageOffsets: PageOffsets
 }
 
-export interface GameStreamProvider {
+export interface StreamProvider {
   get id(): string
   get streams(): Stream[]
   get nextPageOffset(): PageOffset
@@ -54,12 +54,12 @@ export interface GameStreamProvider {
   readStreams(): void
 }
 
-export class GameStreamService {
-  private streamProviders: GameStreamProvider[] = []
+export class StreamService {
+  private streamProviders: StreamProvider[] = []
   private pageSize: number = 1
   private pageOffsets: PageOffsets = {}
 
-  public registerStreamProvider(provider: GameStreamProvider): GameStreamService {
+  public registerStreamProvider(provider: StreamProvider): StreamService {
     this.streamProviders.push(provider)
 
     return this
@@ -82,12 +82,12 @@ export class GameStreamService {
   private getPageOffset(providerId: string): PageOffset {
     return this.pageOffsets[providerId] ?? PageOffset.none()
   }
-  public setPageSize(pageSize: number): GameStreamService {
+  public setPageSize(pageSize: number): StreamService {
     this.pageSize = pageSize;
     return this;
   }
 
-  public setPageOffsets(pageOffsets: PageOffsets): GameStreamService {
+  public setPageOffsets(pageOffsets: PageOffsets): StreamService {
     this.pageOffsets = pageOffsets
     return this;
   }
