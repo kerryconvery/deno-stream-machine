@@ -1,12 +1,12 @@
 import { assertEquals } from "../../dev_deps.ts"
-import { GameStreamService, GameStreamProvider, PagedStreams, Stream, GameStreamProviderOptions } from "../game_stream_service.ts";
+import { GameStreamService, GameStreamProvider, Stream, PageOffset } from "../game_stream_service.ts";
 
 Deno.test("Game stream service", async (t) => {
   await t.step("returns an empty list of game streams when the stream provider has no streams available", () => {
     const streamProvider = new TestStreamProvider('1', createPagedStreams(0))
     const streamService = new GameStreamService().registerStreamProvider(streamProvider)
 
-    const pagedStreams = streamService.getStreams({ pageSize: 1 })
+    const pagedStreams = streamService.getStreams()
 
     assertEquals(pagedStreams.streams.length, 0)
   })
@@ -14,8 +14,9 @@ Deno.test("Game stream service", async (t) => {
   await t.step("returns a list of game streams when at least one stream provider has streams available", () => {
     const streamService = new GameStreamService()
       .registerStreamProvider(new TestStreamProvider('1', createPagedStreams(2)))
+      .setPageSize(2)
 
-    const pagedStreams = streamService.getStreams({ pageSize: 2 })
+    const pagedStreams = streamService.getStreams()
 
     assertEquals(pagedStreams.streams.length, 2)
   })
@@ -24,8 +25,9 @@ Deno.test("Game stream service", async (t) => {
     const streamService = new GameStreamService()
       .registerStreamProvider(new TestStreamProvider('1', createPagedStreams(2)))
       .registerStreamProvider(new TestStreamProvider('2', createPagedStreams(1)))
+      .setPageSize(2)
 
-    const pagedStreams = streamService.getStreams({ pageSize: 2 })
+    const pagedStreams = streamService.getStreams()
 
     assertEquals(pagedStreams.streams.length, 3)
   })
@@ -34,24 +36,27 @@ Deno.test("Game stream service", async (t) => {
     const streamService = new GameStreamService()
       .registerStreamProvider(new TestStreamProvider('1', createPagedStreams(3)))
       .registerStreamProvider(new TestStreamProvider('2', createPagedStreams(3)))
+      .setPageSize(2)
 
-    const pagedStreams = streamService.getStreams({ pageSize: 2 })
+    const pagedStreams = streamService.getStreams()
 
     assertEquals(pagedStreams.streams.length, 4)
   })
 
   await t.step("returns a next page token for each provider that has more pages", () => {
+    const expectedPageOffsets = { provider1: new PageOffset('1'), provider2: PageOffset.none(), provider3: new PageOffset('2') }
     const streamService = new GameStreamService()
-      .registerStreamProvider(new TestStreamProvider('provider1', createPagedStreams(1), '1'))
+      .registerStreamProvider(new TestStreamProvider('provider1', createPagedStreams(1), expectedPageOffsets.provider1))
       .registerStreamProvider(new TestStreamProvider('provider2', createPagedStreams(1)))
-      .registerStreamProvider(new TestStreamProvider('provider3', createPagedStreams(1), '3'))
+      .registerStreamProvider(new TestStreamProvider('provider3', createPagedStreams(1), expectedPageOffsets.provider3))
+      .setPageSize(2)
       
 
-    const pagedStreams = streamService.getStreams({ pageSize: 2 })
+    const pagedStreams = streamService.getStreams()
 
     assertEquals(pagedStreams, {
       streams: [{}, {}, {}],
-      nextPageOffsets: { provider1: '1', provider3: '3' }
+      nextPageOffsets: expectedPageOffsets
     })
   })
 
@@ -60,13 +65,48 @@ Deno.test("Game stream service", async (t) => {
       .registerStreamProvider(new TestStreamProvider('provider1', createPagedStreams(3)))
       .registerStreamProvider(new TestStreamProvider('provider2', createPagedStreams(2)))
       .registerStreamProvider(new TestStreamProvider('provider3', createPagedStreams(3)))
-      
-    const pagedStreams = streamService.getStreams({
-      pageSize: 2,
-      pageOffsets: { provider1: '1', provider2: '2', provider3: '1' }
-    })
+      .setPageSize(2)
+      .setPageOffsets({
+        provider1: new PageOffset('1'),
+        provider2: new PageOffset('2'),
+        provider3: new PageOffset('1')
+      })
+
+    const pagedStreams = streamService.getStreams()
 
     assertEquals(pagedStreams.streams.length, 2)
+  })
+})
+
+Deno.test("Page offset", async (t) => {
+  await t.step("Returns a string page offset", () => {
+    assertEquals(new PageOffset('1').asString(), '1')
+  })
+
+  await t.step("Returns a string as a number page offset", () => {
+    assertEquals(new PageOffset('1').asNumber(), 1)
+  })
+
+  await t.step("Returns page offset as an empty string when not set", () => {
+    assertEquals(PageOffset.none().asString(), '')
+  })
+
+  await t.step("Returns page offset as the number 0 when not set", () => {
+    assertEquals(PageOffset.none().asNumber(), 0)
+  })
+
+  await t.step("Returns true when the page offset is none", () => {
+    const pageOffset = PageOffset.none()
+
+    assertEquals(pageOffset.isSome, true)
+    assertEquals(pageOffset.isNone, false)
+  })
+
+  await t.step("Returns true when the page offset is not none", () => {
+    const pageOffset = PageOffset.some('1')
+
+    assertEquals(pageOffset.isNone, true)
+    assertEquals(pageOffset.isSome, false)
   })
 })
 
@@ -75,12 +115,12 @@ class TestStreamProvider implements GameStreamProvider {
   private _providerId: string
   private _streams: Stream[] = []
   private _pageSize: number = 1
-  private _pageOffset?: string
-  private _nextPageOffset?: string
+  private _pageOffset: PageOffset = PageOffset.none()
+  private _nextPageOffset: PageOffset = PageOffset.none()
 
-  constructor(providerId: string, availableStreams: Stream[], nextPageOffset?: string) {
+  constructor(providerId: string, availableStreams: Stream[], nextPageOffset?: PageOffset) {
     this._providerId = providerId
-    this._streamPlatform = { availableStreams, nextPageOffset }
+    this._streamPlatform = { availableStreams, nextPageOffset: nextPageOffset ?? PageOffset.none() }
   }
   
   public get id(): string {
@@ -91,33 +131,27 @@ class TestStreamProvider implements GameStreamProvider {
     return this._streams
   }
 
-  public get nextPageOffset(): string | undefined {
+  public get nextPageOffset(): PageOffset {
     return this._nextPageOffset;
   }
 
   public readStreams(): void {
-    const pageStartPosition = this.getPageStartPosition(this._pageOffset)
-
-    this._streams = this._streamPlatform.availableStreams.slice(pageStartPosition, this._pageSize)
+    this._streams = this._streamPlatform.availableStreams.slice(this._pageOffset.asNumber(), this._pageSize)
     this._nextPageOffset = this._streamPlatform.nextPageOffset
-  }
-
-  private getPageStartPosition(nextPageOffset?: string): number {
-    return nextPageOffset ? parseInt(nextPageOffset) : 0
   }
 
   public setPageSize(pageSize: number): void {
     this._pageSize = pageSize
   }
 
-  public setPageOffset(pageOffset?: string): void {
+  public setPageOffset(pageOffset: PageOffset): void {
     this._pageOffset = pageOffset
   }
 }
 
 type StreamPlatform = {
   availableStreams: Stream[]
-  nextPageOffset?: string
+  nextPageOffset: PageOffset
 }
 
 function createPagedStreams(numberOfStreams: number): Stream[] {
