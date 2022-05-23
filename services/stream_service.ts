@@ -23,9 +23,15 @@ export class PageOffset {
   }
 
   public asNumber(): number {
-    return this.value ? parseInt(this.value) : 0
+    return this.value ? this.tryParseInt(this.value, 0) : 0
   }
 
+  private tryParseInt(value: string, defaultValue: number): number {
+    const parsedValue = parseInt(value)
+
+    return isNaN(parsedValue) ? defaultValue : parsedValue
+  }
+  
   public get isSome(): boolean {
     return !this.isNone
   }

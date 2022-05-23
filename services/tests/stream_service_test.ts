@@ -108,6 +108,10 @@ Deno.test("Page offset", async (t) => {
     assertEquals(pageOffset.isSome, true)
     assertEquals(pageOffset.isNone, false)
   })
+
+  await t.step("Returns zero when the page offset is not a valid number", () => {
+    assertEquals(PageOffset.some('a').asNumber(), 0)
+  })
 })
 
 class TestStreamProvider implements StreamProvider {
