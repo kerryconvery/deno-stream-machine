@@ -35,13 +35,13 @@ export class PageOffset {
   }
 }
 
-export type ProviderPageOffsets = {
+export type PageOffsets = {
   [key: string]: PageOffset
 }
 
 export type PagedStreams = {
   streams: Stream[],
-  nextPageOffsets: ProviderPageOffsets
+  nextPageOffsets: PageOffsets
 }
 
 export interface GameStreamProvider {
@@ -57,7 +57,7 @@ export interface GameStreamProvider {
 export class GameStreamService {
   private streamProviders: GameStreamProvider[] = []
   private pageSize: number = 1
-  private pageOffsets: ProviderPageOffsets = {}
+  private pageOffsets: PageOffsets = {}
 
   public registerStreamProvider(provider: GameStreamProvider): GameStreamService {
     this.streamProviders.push(provider)
@@ -87,19 +87,19 @@ export class GameStreamService {
     return this;
   }
 
-  public setPageOffsets(pageOffsets: ProviderPageOffsets): GameStreamService {
+  public setPageOffsets(pageOffsets: PageOffsets): GameStreamService {
     this.pageOffsets = pageOffsets
     return this;
   }
 }
 
 class StreamAggregator {
-  private providerStreams: Record<string, Stream[]> = {}
-  private providerPageOffsets: Record<string, PageOffset> = {}
+  private streams: Record<string, Stream[]> = {}
+  private pageOffsets: Record<string, PageOffset> = {}
   
-  public addStreams(providerId: string, streams: Stream[], nextPageOffset: PageOffset): StreamAggregator {
-    this.providerStreams[providerId] = streams
-    this.providerPageOffsets[providerId] = nextPageOffset
+  public addStreams(streamSource: string, streams: Stream[], nextPageOffset: PageOffset): StreamAggregator {
+    this.streams[streamSource] = streams
+    this.pageOffsets[streamSource] = nextPageOffset
 
     return this
   }
@@ -113,17 +113,17 @@ class StreamAggregator {
 
   private getConcatenatedStreams(): Stream[] {
     return Object
-      .values(this.providerStreams)
-      .reduce<Stream[]>((allStreams: Stream[], providerStreams: Stream[]) => {
-        return allStreams.concat(providerStreams)
+      .values(this.streams)
+      .reduce<Stream[]>((allStreams: Stream[], streams: Stream[]) => {
+        return allStreams.concat(streams)
     }, [])
   }
 
-  private getNextPageOffsets(): ProviderPageOffsets {
+  private getNextPageOffsets(): PageOffsets {
     return Object
-      .entries(this.providerPageOffsets)
-      .reduce<ProviderPageOffsets>((nextPageOffsets: ProviderPageOffsets, [providerId, nextPageOffset]) => {
-          return {...nextPageOffsets, [providerId]: nextPageOffset! }
+      .entries(this.pageOffsets)
+      .reduce<PageOffsets>((nextPageOffsets: PageOffsets, [streamSource, nextPageOffset]) => {
+          return {...nextPageOffsets, [streamSource]: nextPageOffset! }
       }, {})
   }
 }
