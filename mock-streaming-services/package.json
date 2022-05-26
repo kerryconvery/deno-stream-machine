@@ -1,0 +1,14 @@
+{
+  "name": "mock-stream-services",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "mocks" : "mocks-server"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@mocks-server/main": "^3.0.1"
+  }
+}

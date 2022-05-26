@@ -55,9 +55,9 @@ export interface StreamProvider {
   get streams(): Stream[]
   get nextPageOffset(): PageOffset
 
-  setPageSize(pageSize: number): void
-  setPageOffset(pageOffset: PageOffset): void
-  readStreams(): void
+  setPageSize(pageSize: number): StreamProvider
+  setPageOffset(pageOffset: PageOffset): StreamProvider
+  readStreams(): StreamProvider
 }
 
 export class StreamService {

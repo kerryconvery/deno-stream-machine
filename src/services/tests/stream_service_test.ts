@@ -1,4 +1,4 @@
-import { assertEquals } from "../../dev_deps.ts"
+import { assertEquals } from "../../../dev_deps.ts"
 import { StreamService, StreamProvider, Stream, PageOffset } from "../stream_service.ts";
 
 Deno.test("Stream service", async (t) => {
@@ -139,17 +139,20 @@ class TestStreamProvider implements StreamProvider {
     return this._nextPageOffset;
   }
 
-  public readStreams(): void {
+  public readStreams(): StreamProvider {
     this._streams = this._streamPlatform.availableStreams.slice(this._pageOffset.asNumber(), this._pageSize)
     this._nextPageOffset = this._streamPlatform.nextPageOffset
+    return this
   }
 
-  public setPageSize(pageSize: number): void {
+  public setPageSize(pageSize: number): StreamProvider {
     this._pageSize = pageSize
+    return this
   }
 
-  public setPageOffset(pageOffset: PageOffset): void {
+  public setPageOffset(pageOffset: PageOffset): StreamProvider {
     this._pageOffset = pageOffset
+    return this
   }
 }
 

@@ -1,0 +1,6 @@
+[
+  {
+    "id": "get-streams-success",
+    "routesVariants": ["twitch-streams:success"]
+  }
+]
