@@ -27,6 +27,24 @@ module.exports = [
                   "d4bb9c58-2141-4881-bcdc-3fe0505457d1"
                 ],
                 "is_mature": false
+              },
+              {
+                "id": "41375541868",
+                "user_id": "459331509",
+                "user_login": "auronplay",
+                "user_name": "auronplay",
+                "game_id": "494131",
+                "game_name": "Dota",
+                "type": "live",
+                "title": "Dota finals",
+                "viewer_count": 78365,
+                "started_at": "2021-03-10T15:04:21Z",
+                "language": "es",
+                "thumbnail_url": "https://static-cdn.jtvnw.net/previews-ttv/live_user_auronplay-{width}x{height}.jpg",
+                "tag_ids": [
+                  "d4bb9c58-2141-4881-bcdc-3fe0505457d1"
+                ],
+                "is_mature": false
               }
             ],
             "pagination": {

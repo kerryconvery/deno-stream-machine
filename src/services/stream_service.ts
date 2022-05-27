@@ -1,6 +1,6 @@
 
 export type Stream = {
-
+  title: string
 }
 
 export class PageOffset {
@@ -57,13 +57,14 @@ export interface StreamProvider {
 
   setPageSize(pageSize: number): StreamProvider
   setPageOffset(pageOffset: PageOffset): StreamProvider
-  readStreams(): StreamProvider
+  readStreams(): Promise<void>
 }
 
 export class StreamService {
   private streamProviders: StreamProvider[] = []
   private pageSize: number = 1
   private pageOffsets: PageOffsets = {}
+  private streamAggregator: StreamAggregator = new StreamAggregator()
 
   public registerStreamProvider(provider: StreamProvider): StreamService {
     this.streamProviders.push(provider)
@@ -71,23 +72,31 @@ export class StreamService {
     return this
   }
 
-  public getStreams(): PagedStreams {
-    const streamAggregator = new StreamAggregator()
+  public async getStreams(): Promise<PagedStreams> {
+    const tasks = this.streamProviders.map(provider => this.collectStreams(provider))
 
-    this.streamProviders.forEach((provider) => {
-      provider.setPageSize(this.pageSize)
-      provider.setPageOffset(this.getPageOffset(provider.id))
-      provider.readStreams()
+    await Promise.all(tasks)
 
-      streamAggregator.addStreams(provider.id, provider.streams, provider.nextPageOffset)
+    return this.streamAggregator.aggregateStreams()
+  }
+
+  private async collectStreams(provider: StreamProvider): Promise<void> {
+    provider.setPageSize(this.pageSize)
+    provider.setPageOffset(this.getPageOffset(provider.id))
+
+    return provider.readStreams().then(() => {
+      this.streamAggregator.addStreams(
+        provider.id,
+        provider.streams,
+        provider.nextPageOffset
+      )
     })
-
-    return streamAggregator.aggregateStreams()
   }
 
   private getPageOffset(providerId: string): PageOffset {
     return this.pageOffsets[providerId] ?? PageOffset.none()
   }
+
   public setPageSize(pageSize: number): StreamService {
     this.pageSize = pageSize;
     return this;
