@@ -1,4 +1,4 @@
-import { Stream } from "../../services/stream_service.ts"
+import { Stream } from "../../../services/streams/types/stream.ts"
 import { TwitchStreams } from "../gateways/twitch_helix_gateway.ts"
 
 export class TwitchStreamsMapper {

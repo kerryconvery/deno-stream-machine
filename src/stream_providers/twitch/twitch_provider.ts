@@ -1,6 +1,8 @@
-import { PageOffset, Stream, StreamProvider } from "../../services/stream_service.ts";
-import { TwitchHelixGateway } from "../gateways/twitch_helix_gateway.ts";
-import { TwitchStreamsMapper } from "../mappers/twitch_streams_mapper.ts";
+import { StreamProvider } from "../../services/streams/stream_service.ts";
+import { Stream } from "../../services/streams/types/stream.ts"
+import { PageOffset } from "../../services/streams/types/page_offset.ts"
+import { TwitchHelixGateway } from "./gateways/twitch_helix_gateway.ts";
+import { TwitchStreamsMapper } from "./mappers/twitch_streams_mapper.ts";
 
 type TwitchProviderOptions = {
     defaultPageSize: number,
