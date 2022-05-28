@@ -1,5 +1,5 @@
-import { PageOffset, PageOffsets } from "./types/page_offset.ts"
-import { PagedStreams, Stream } from "./types/stream.ts"
+import { PageOffsets, PageOffset } from "../types/page_offset.ts"
+import { Stream, PagedStreams } from "../types/stream.ts"
 
 export class StreamAggregator {
   private streams: Record<string, Stream[]> = {}

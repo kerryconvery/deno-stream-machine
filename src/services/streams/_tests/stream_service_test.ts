@@ -1,5 +1,6 @@
 import { assertEquals } from "../../../../dev_deps.ts"
-import { StreamService, StreamProvider } from "../stream_service.ts";
+import { StreamService } from "../stream_service.ts";
+import { StreamProvider } from "../types/stream_provider.ts";
 import { PageOffset } from "../types/page_offset.ts";
 import { Stream } from "../types/stream.ts";
 

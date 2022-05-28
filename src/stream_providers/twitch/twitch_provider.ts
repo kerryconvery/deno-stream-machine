@@ -1,4 +1,4 @@
-import { StreamProvider } from "../../services/streams/stream_service.ts";
+import { StreamProvider } from "../../services/streams/types/stream_provider.ts";
 import { Stream } from "../../services/streams/types/stream.ts"
 import { PageOffset } from "../../services/streams/types/page_offset.ts"
 import { TwitchHelixGateway } from "./gateways/twitch_helix_gateway.ts";

@@ -1,16 +1,7 @@
-import { StreamAggregator } from "./stream_aggregator.ts"
 import { PageOffsets, PageOffset } from "./types/page_offset.ts"
-import { Stream, PagedStreams } from "./types/stream.ts"
-
-export interface StreamProvider {
-  get id(): string
-  get streams(): Stream[]
-  get nextPageOffset(): PageOffset
-
-  setPageSize(pageSize: number): StreamProvider
-  setPageOffset(pageOffset: PageOffset): StreamProvider
-  readStreams(): Promise<void>
-}
+import { PagedStreams } from "./types/stream.ts"
+import { StreamAggregator } from "./helpers/stream_aggregator.ts"
+import { StreamProvider } from "./types/stream_provider.ts"
 
 export class StreamService {
   private streamProviders: StreamProvider[] = []
