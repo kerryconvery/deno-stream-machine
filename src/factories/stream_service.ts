@@ -6,8 +6,10 @@ const twitchGatewayUrl = "http://localhost:3100"
 
 export function createStreamService(): StreamService {
   return new StreamService()
-    .registerStreamProvider(new TwitchProvider({
-      gateway: new TwitchHelixGateway({ apiUrl: twitchGatewayUrl }),
-      defaultPageSize: 10
-    }))
+    .registerStreamProvider(
+        new TwitchProvider({
+          gateway: new TwitchHelixGateway({ apiUrl: twitchGatewayUrl }),
+          defaultPageSize: 10
+        })
+    )
 }

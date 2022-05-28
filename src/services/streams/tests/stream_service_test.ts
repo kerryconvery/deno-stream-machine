@@ -1,5 +1,7 @@
-import { assertEquals } from "../../../dev_deps.ts"
-import { StreamService, StreamProvider, Stream, PageOffset } from "../stream_service.ts";
+import { assertEquals } from "../../../../dev_deps.ts"
+import { StreamService, StreamProvider } from "../stream_service.ts";
+import { PageOffset } from "../types/page_offset.ts";
+import { Stream } from "../types/stream.ts";
 
 Deno.test("Stream service", async (t) => {
   await t.step("returns an empty list of streams when the stream provider has no streams available", async () => {
