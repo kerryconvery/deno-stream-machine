@@ -22,7 +22,7 @@ module.exports = [
                 "viewer_count": 78365,
                 "started_at": "2021-03-10T15:04:21Z",
                 "language": "es",
-                "thumbnail_url": "https://static-cdn.jtvnw.net/previews-ttv/live_user_auronplay-{width}x{height}.jpg",
+                "thumbnail_url": "https://little-nightmares.jpg",
                 "tag_ids": [
                   "d4bb9c58-2141-4881-bcdc-3fe0505457d1"
                 ],
@@ -40,7 +40,7 @@ module.exports = [
                 "viewer_count": 78365,
                 "started_at": "2021-03-10T15:04:21Z",
                 "language": "es",
-                "thumbnail_url": "https://static-cdn.jtvnw.net/previews-ttv/live_user_auronplay-{width}x{height}.jpg",
+                "thumbnail_url": "https://dota-finals.jpg",
                 "tag_ids": [
                   "d4bb9c58-2141-4881-bcdc-3fe0505457d1"
                 ],

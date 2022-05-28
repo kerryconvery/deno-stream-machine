@@ -1,11 +1,4 @@
-
-export type TwitchStream = {
-  title: string
-}
-
-export type TwitchStreams = {
-  data: TwitchStream[]
-}
+import { TwitchStreams } from "./types/stream.ts"
 
 export type TwitchHelixGatewayOptions = {
   apiUrl: string,

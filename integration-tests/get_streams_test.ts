@@ -8,6 +8,8 @@ Deno.test("Get Streams", async (t) => {
 
     assertEquals(data.streams.length, 2)
     assertEquals(data.streams[0].title, 'hablamos y le damos a Little Nightmares 1')
+    assertEquals(data.streams[0].thumbnail, 'https://little-nightmares.jpg')
     assertEquals(data.streams[1].title, 'Dota finals')
+    assertEquals(data.streams[1].thumbnail, 'https://dota-finals.jpg')
   })
 })

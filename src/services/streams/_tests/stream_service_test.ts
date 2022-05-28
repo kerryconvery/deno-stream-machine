@@ -15,7 +15,7 @@ Deno.test("Stream service", async (t) => {
   })
 
   await t.step("includes the stream fields", async () => {
-    const expectedStream = { title: 'Stream 1' }
+    const expectedStream = { title: 'Stream 1', thumbnail: 'Stream thumbnail' }
     const streamService = new StreamService()
       .registerStreamProvider(new TestStreamProvider('1', [expectedStream]))
       .setPageSize(2)
@@ -139,9 +139,12 @@ type StreamPlatform = {
 }
 
 function createPagedStreams(numberOfStreams: number): Stream[] {
-  return new Array<Stream>(numberOfStreams).fill({ title: '' }).map((_, index: number) => {
-    return {
-      title: `Stream ${index + 1}`
-    }
-  })
+  return new Array<Stream>(numberOfStreams)
+    .fill({ title: '', thumbnail: '' })
+    .map((_, index: number) => {
+      return {
+        title: `Stream ${index + 1}`,
+        thumbnail: ''
+      }
+    })
 }
